@@ -1,6 +1,7 @@
 package david.augusto.luan.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,8 +33,10 @@ public class ContactController {
 
 	@GetMapping(path = { "/{id}" })
 	public ResponseEntity<?> findOne(@PathVariable("id") Long id) {
-		return contactRepository.findById(id).map(record -> ResponseEntity.ok().body(id))
-				.orElse(ResponseEntity.notFound().build());
+		
+			Optional<Contact>contactOptional = contactRepository.findById(id);
+			
+			return  contactOptional.isPresent()	? ResponseEntity.ok().body(contactOptional.get()):ResponseEntity.notFound().build();
 	}
 
 	@PostMapping
@@ -41,7 +44,7 @@ public class ContactController {
 		List<Contact> list = contactRepository.findAll();
 		list.forEach(i -> {
 			if (i.getEmail().equals(contact.getEmail())) {
-				throw new EmailAlreadyRegistered(HttpStatus.BAD_REQUEST, "Email já cadastrado!");
+				throw new EmailAlreadyRegistered(HttpStatus.CREATED, "Email já cadastrado!");
 			}
 		});
 		return contactRepository.save(contact);
